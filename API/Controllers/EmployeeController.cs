@@ -87,5 +87,26 @@ namespace API.Controllers
             return emp;
           }
 
+          [HttpGet("filter")]
+          public async Task<ActionResult<ICollection<Employee>>> GetFilteredEmployees(string ? name=null,string? surname=null,int? depid=0)
+          {
+            ICollection<Employee> employees = _context.Employees.ToList();
+
+            if(name != null)
+            {
+                employees = employees.Where(e =>e.Name.ToLower().Contains(name.ToLower())).ToList();
+            }
+            if(surname != null)
+            {
+                employees = employees.Where(e =>e.Surname.ToLower().Contains(surname.ToLower())).ToList();
+            }
+            if(depid != 0)
+            {
+                employees = employees.Where(e =>e.DepartmentId==depid).ToList();
+            } 
+
+            return employees.ToList();
+          }
+
     }
 }
