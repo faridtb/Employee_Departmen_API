@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.Data;
 using API.Entities;
+using API.Extensions;
+using API.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,9 +20,12 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Employee>>> GetEmployees()
+        public async Task<ActionResult<IEnumerable<Employee>>> GetEmployees([FromQuery]EmployeeParams employeeParams)
         {
-            return await _context.Employees.ToListAsync();
+            var query = _context.Employees;
+            var pagedList = await PagedList<Employee>.CreateAsync(query, employeeParams.PageNumber, employeeParams.PageSize);
+            Response.AddPaginationHeader(pagedList.CurrentPage, pagedList.PageSize, pagedList.TotalCount, pagedList.TotalPages);
+            return Ok(pagedList); 
         }
 
         [HttpGet("{id}")]
@@ -88,24 +93,28 @@ namespace API.Controllers
           }
 
           [HttpGet("filter")]
-          public async Task<ActionResult<ICollection<Employee>>> GetFilteredEmployees(string ? name=null,string? surname=null,int? depid=0)
+          public async Task<ActionResult<ICollection<Employee>>> GetFilteredEmployees([FromQuery]EmployeeParams employeeParams, string ? name=null,string? surname=null,int? depid=0)
           {
-            ICollection<Employee> employees = _context.Employees.ToList();
+
+            var employees = _context.Employees.AsQueryable();
 
             if(name != null)
             {
-                employees = employees.Where(e =>e.Name.ToLower().Contains(name.ToLower())).ToList();
+                employees = employees.Where(e =>e.Name.ToLower().Contains(name.ToLower()));
             }
             if(surname != null)
             {
-                employees = employees.Where(e =>e.Surname.ToLower().Contains(surname.ToLower())).ToList();
+                employees = employees.Where(e =>e.Surname.ToLower().Contains(surname.ToLower()));
             }
             if(depid != 0)
             {
-                employees = employees.Where(e =>e.DepartmentId==depid).ToList();
+                employees = employees.Where(e =>e.DepartmentId==depid);
             } 
 
-            return employees.ToList();
+            var pagedList = await PagedList<Employee>.CreateAsync(employees, employeeParams.PageNumber, employeeParams.PageSize);
+            Response.AddPaginationHeader(pagedList.CurrentPage, pagedList.PageSize, pagedList.TotalCount, pagedList.TotalPages);
+
+            return pagedList.ToList();
           }
 
     }
