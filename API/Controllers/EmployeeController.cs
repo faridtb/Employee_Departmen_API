@@ -28,6 +28,64 @@ namespace API.Controllers
         {
             return await _context.Employees.FindAsync(id);
         }
-        
+
+        [HttpPost("crt")]
+        public async Task<ActionResult<Employee>> CreateEmployee(string name,string surname,DateTime birth,int depid)
+        {
+            var emp = new Employee 
+            {
+                Name = name,
+                Surname = surname,
+                BirthDate = birth,
+                CreateDate = DateTime.Now,
+                DepartmentId =depid
+            };
+
+            if(_context.Departments.Find(depid) == null) return BadRequest("Cant Find any department");
+
+            if(_context.Employees.Any(e => e.Name ==name && e.Surname ==surname && e.BirthDate ==birth)) return BadRequest("That employee exist");
+
+            _context.Add(emp);
+
+            await _context.SaveChangesAsync();
+
+            return emp;
+        }
+
+         [HttpDelete("del/{id}")]
+         public async Task<ActionResult<Employee>> RemoveEmployee(int id)
+         {
+            var emp = _context.Employees.Find(id);
+
+            if(emp == null) return BadRequest("Cant Find Any Employee");
+
+            _context.Employees.Remove(emp);
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Employee deleted from base");
+         }
+
+          [HttpPut("update/{id}")]
+
+          public async Task<ActionResult<Employee>> UpdateEmployee(int id,[FromBody]Employee employee)
+          {
+            var emp = _context.Employees.Find(id);
+
+            if(emp == null) return BadRequest("Cant Find Any Employee");
+            
+            emp.Name = employee.Name;
+            emp.Surname = employee.Surname;
+            emp.BirthDate =employee.BirthDate;
+            emp.DepartmentId = employee.DepartmentId;
+            emp.CreateDate =DateTime.Now;
+
+            _context.Employees.Update(emp);
+
+            await _context.SaveChangesAsync();
+
+            return emp;
+          }
+
     }
 }
