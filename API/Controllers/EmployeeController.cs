@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Data;
+using API.DTOs;
 using API.Entities;
 using API.Extensions;
 using API.Helpers;
@@ -34,27 +35,38 @@ namespace API.Controllers
             return await _context.Employees.FindAsync(id);
         }
 
+        [HttpGet("detailed")]
+        public async Task<ActionResult<IEnumerable<Employee>>> GetEmployeeFullInfo()
+        {
+            return await _context.Employees.Include(x => x.Department).ToListAsync();
+        }
+
         [HttpPost("crt")]
-        public async Task<ActionResult<Employee>> CreateEmployee(string name,string surname,DateTime birth,int depid)
+        public async Task<ActionResult<EmployeeDto>> CreateEmployee(EmployeeDto employeeDto)
         {
             var emp = new Employee 
             {
-                Name = name,
-                Surname = surname,
-                BirthDate = birth,
+                Name = employeeDto.Name,
+                Surname = employeeDto.Surname,
+                BirthDate = employeeDto.BirthDate,
                 CreateDate = DateTime.Now,
-                DepartmentId =depid
+                DepartmentId =employeeDto.DepartmentId
             };
 
-            if(_context.Departments.Find(depid) == null) return BadRequest("Cant Find any department");
+            if(_context.Departments.Find(employeeDto.DepartmentId) == null) return BadRequest("Cant Find any department");
 
-            if(_context.Employees.Any(e => e.Name ==name && e.Surname ==surname && e.BirthDate ==birth)) return BadRequest("That employee exist");
+            if(_context.Employees.Any(e => e.Name == employeeDto.Name && e.Surname == employeeDto.Surname && e.BirthDate == employeeDto.BirthDate)) return BadRequest("That employee exist");
 
             _context.Add(emp);
 
             await _context.SaveChangesAsync();
 
-            return emp;
+            return new EmployeeDto
+            {
+                Name = emp.Name,
+                Surname =emp.Surname,
+                DepartmentId =emp.DepartmentId
+            };
         }
 
          [HttpDelete("del/{id}")]

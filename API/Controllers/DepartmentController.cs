@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using API.Data;
+using API.DTOs;
 using API.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -31,15 +32,15 @@ namespace API.Controllers
 
 
         [HttpPost("crtdep")]
-        public async Task<ActionResult<Department>> CreateDepartment(string name)
+        public async Task<ActionResult<Department>> CreateDepartment(DepartmentDto departmentDto)
         {
             var dep = new Department 
             {
-                Name = name.ToLower(),
+                Name = departmentDto.Name.ToLower(),
                 CreateDate = DateTime.Now,
             };
         
-            if(_context.Departments.Any(d=>d.Name ==name.ToLower())) return BadRequest("This department exist");
+            if(_context.Departments.Any(d=>d.Name ==departmentDto.Name.ToLower())) return BadRequest("This department exist");
 
             _context.Departments.Add(dep);
 

@@ -2,17 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using API.Entities;
 
-namespace API.Entities
+namespace API.DTOs
 {
-    public class Employee
+    public class EmployeeDto
     {
-        public int Id { get; set; }
         public string Name { get; set; }
         public string Surname { get; set; }
         public DateTime BirthDate { get; set; }
-        public DateTime CreateDate { get; set; }
         public int DepartmentId { get; set; }
-        public Department Department { get; set; }
+
     }
 }
